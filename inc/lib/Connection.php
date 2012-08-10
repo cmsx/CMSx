@@ -54,7 +54,7 @@ class Connection
   /**
    * Добавление в реестр подключений
    */
-  protected static function Add(static $obj, $name)
+  protected static function Add(self $obj, $name)
   {
     if (is_null($name)) {
       $name = self::DEFAULT_NAME;
