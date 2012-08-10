@@ -35,6 +35,8 @@ require_once __DIR__.'/const.php';
 // Пользовательский конфиг
 if (!defined('NO_CONFIG')) {
   require_once __DIR__.'/config.php';
+} else {
+  define('DEVMODE', true);
 }
 
 /** Вывод ошибок */
