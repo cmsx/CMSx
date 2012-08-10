@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__.'/../../lib/Autoloader.php';
+define('NO_CONFIG', true);
+require_once __DIR__.'/../../init.php';
 
 class AutoloaderTest extends PHPUnit_Framework_TestCase
 {
@@ -15,7 +16,6 @@ class AutoloaderTest extends PHPUnit_Framework_TestCase
 
   function testLoadClass()
   {
-    require_once __DIR__.'/../../init.php';
     try {
       new SQL('pages');
       new BaseSchema();
