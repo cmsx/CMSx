@@ -22,6 +22,11 @@ class FormElementTest extends PHPUnit_Framework_TestCase
     $str = '<input id="form-name" name="name" type="text" value="" />';
     $this->assertEquals($str, $el->renderInput(), 'Создание инпута по умолчанию');
 
+    $el->verify('"""\'\'\'@#$%^&');
+    $str = '<input id="form-name" name="name" type="text" value="&quot;&quot;&quot;\'\'\'@#$%^&amp;" />';
+    $this->assertEquals($str, $el->renderInput(), 'Создание инпута с "плохими" символами');
+    $el->verify(null);
+
     $el->setFormName('myform');
     $str = '<input id="form-myform-name" name="myform[name]" type="text" value="" />';
     $this->assertEquals($str, $el->renderInput(), 'Создание инпута с именованной формой');
