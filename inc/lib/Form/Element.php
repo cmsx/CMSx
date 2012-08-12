@@ -51,7 +51,7 @@ abstract class FormElement
   {
     return '<label'.($this->hasErrors() ? ' class="error_label"' : '').'>'
       .$this->renderErrors().$this->renderIsRequired().$this->getLabel()
-      .' '.$this->getInput().'</label>';
+      .' '.$this->renderInput().'</label>';
   }
 
   /** Отрисовка поля формы */
