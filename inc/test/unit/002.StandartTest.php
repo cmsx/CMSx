@@ -77,25 +77,4 @@ class StandartTest extends PHPUnit_Framework_TestCase
     $std->prepend('arr3', array('two'=> 3));
     $this->assertEquals(array('two'=> 2, 'one'=> 1), $std->get('arr3'), 'Добавление в начало массива ассоциативного массив');
   }
-
-  function testForeach()
-  {
-    $this->markTestSkipped('Разобраться с ArrayAccess');
-    $std  = new StandartObject();
-    $vals = array(
-      1 => 'One',
-      2 => 'Two',
-      3 => 'Three'
-    );
-    foreach ($vals as $k=> $v) {
-      $std[$k] = $v;
-    }
-    $this->assertTrue(count($std) == 3, 'Количество элементов');
-    $i = 1;
-    foreach ($std as $k=> $v) {
-      echo $v."\n";
-      $this->assertTrue($v == next($vals), 'Следующий элемент массива равен оригинальному');
-      $this->assertTrue($i++ == $k, 'Ключ массива идет по порядку');
-    }
-  }
 }
