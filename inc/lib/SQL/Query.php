@@ -34,6 +34,11 @@ abstract class SQLQuery
     return $this->make(true);
   }
 
+  function __invoke()
+  {
+    return $this->execute();
+  }
+
   /**
    * Создание SQL запроса по настроенным параметрам
    *
