@@ -17,7 +17,7 @@ define ('DIR_CTRL', __DIR__.'/ctrl');
 /** Папка с шаблонами */
 define ('DIR_TMPL', __DIR__.'/tmpl');
 /** Папка с тестами */
-define ('DIR_TEST', __DIR__.'/tests');
+define ('DIR_TEST', __DIR__.'/test');
 /** Папка с временными файлами и кешем */
 define ('DIR_TEMP', realpath(__DIR__.'/../tmp'));
 /** Путь к изображениям на сайте */
