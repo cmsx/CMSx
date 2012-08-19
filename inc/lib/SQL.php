@@ -63,6 +63,12 @@ class SQL extends StandartErrors
     return $stmt->execute($values) ? $stmt : false;
   }
 
+  /** Последний добавленный ID */
+  public static function GetLastInsertID()
+  {
+    return self::$connection->lastInsertId();
+  }
+
   /**
    * Подключение по умолчанию для всех запросов
    * @static

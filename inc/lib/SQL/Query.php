@@ -22,6 +22,7 @@ abstract class SQLQuery
   protected $binded_values;
   protected $where_and = true;
   protected $having_and = true;
+  protected $last_insert_id;
 
   function __construct($table)
   {

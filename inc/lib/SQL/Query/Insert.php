@@ -17,6 +17,22 @@ class SQLQueryInsert extends SQLQuery
     return $this->sql;
   }
 
+  /**
+   * Выполняет запрос и возвращает количество затронутых строк.
+   * false если возникла ошибка
+   *
+   * @return int|bool
+   */
+  public function execute($values = null)
+  {
+    $res = parent::execute($values);
+    if ($res) {
+      return SQL::GetLastInsertID();
+    } else {
+      return false;
+    }
+  }
+
   /** Установка значения для изменения в БД */
   public function set($key, $value)
   {
