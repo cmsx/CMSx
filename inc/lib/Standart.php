@@ -5,7 +5,7 @@
  * доступ к объекту как к массиву и хранилку-обработчик ошибок.
  */
 
-abstract class Standart implements ArrayAccess
+abstract class Standart extends StandartErrors implements ArrayAccess
 {
   /** @var array Переменные объекта */
   protected $vars = array();
@@ -45,23 +45,27 @@ abstract class Standart implements ArrayAccess
 
   /**
    * Установка значения переменной объекта
-   * @param $name имя переменной
+   * @param      $name  имя переменной
    * @param null $value значение. Если null то переменная будет удалена
+   *
    * @return static
    */
   public function set($name, $value = null)
   {
     if (is_null($value)) {
       unset($this->vars[$name]);
-    } else $this->vars[$name] = $value;
+    } else {
+      $this->vars[$name] = $value;
+    }
     return $this;
   }
 
   /**
    * Получение переменной объекта.
    * Если указан фильтр и значение не соответствует - вернет $default
-   * @param $name имя переменной
+   * @param                     $name   имя переменной
    * @param null|string|Closure $filter Фильтр для проверки значения
+   *
    * @return mixed|bool
    */
   public function get($name, $filter = null, $default = false)
@@ -87,8 +91,9 @@ abstract class Standart implements ArrayAccess
   /**
    * Добавление в конец переменной значения.
    * Корректно работает с массивами.
-   * @param string $name Имя переменной
+   * @param string       $name  Имя переменной
    * @param string|array $value Добавляемая строка или массив
+   *
    * @return Standart
    */
   public function append($name, $value)
@@ -97,9 +102,11 @@ abstract class Standart implements ArrayAccess
     if (is_array($v)) {
       if (is_array($value)) {
         $v = array_merge($v, $value);
-      } else array_push($v, $value);
+      } else {
+        array_push($v, $value);
+      }
     } else {
-      $v = $v.$value;
+      $v = $v . $value;
     }
     return $this->set($name, $v);
   }
@@ -107,8 +114,9 @@ abstract class Standart implements ArrayAccess
   /**
    * Добавление в начало переменной значения.
    * Корректно работает с массивами.
-   * @param string $name Имя переменной
+   * @param string       $name  Имя переменной
    * @param string|array $value Добавляемая строка или массив
+   *
    * @return Standart
    */
   public function prepend($name, $value)
@@ -117,9 +125,11 @@ abstract class Standart implements ArrayAccess
     if (is_array($v)) {
       if (is_array($value)) {
         $v = array_merge($value, $v);
-      } else array_unshift($v, $value);
+      } else {
+        array_unshift($v, $value);
+      }
     } else {
-      $v = $value.$v;
+      $v = $value . $v;
     }
     return $this->set($name, $v);
   }
@@ -127,7 +137,9 @@ abstract class Standart implements ArrayAccess
   /**
    * Проверка наличия ошибок. Если ошибок нет, вернет false.
    * Если ошибки есть вернет массив ключ=>текст ошибки
+   *
    * @param $what ключ для выбора ошибки по заданному ключу
+   *
    * @return array|bool
    */
   public function getErrors($what = null)
@@ -152,6 +164,7 @@ abstract class Standart implements ArrayAccess
    * Добавление ошибки
    * @param $text текст ошибки
    * @param $what ключ
+   *
    * @return Standart
    */
   protected function addError($text, $what = null)
