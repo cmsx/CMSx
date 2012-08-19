@@ -1,352 +1,180 @@
 <?php
 
-class SQL
+class SQL extends StandartErrors
 {
-  protected $table;
-  protected $columns;
-  protected $action;
-  protected $where;
-  protected $limit;
-  protected $offset;
-  protected $groupby;
-  protected $orderby;
-  protected $values;
-  protected $binded_values;
-  protected $join_arr;
-  protected $prefix;
-  protected $no_bind;
+  /** В объекте нет соединения */
+  const ERROR_NO_CONNECTION = 10;
+  /** Соединение не является объектом PDO */
+  const ERROR_BAD_CONNECTION = 11;
+  /** Ошибка при select`е по паре ключ-значение, нет такого ключа */
+  const ERROR_SELECT_BY_PAIR_NO_KEY = 20;
+  /** Ошибка при select`е по паре ключ-значение, нет такого значения */
+  const ERROR_SELECT_BY_PAIR_NO_VALUE = 21;
+  /** Ошибка при попытке создания полнотекстового индекса на таблице не MyISAM */
+  const ERROR_FULLTEXT_ONLY_MYISAM = 31;
 
-  static protected $default_prefix;
-  static protected $pdo_bind = true;
+  /** Тип таблиц MyISAM принят по умолчанию в MySQL */
+  const TYPE_MyISAM = 'MyISAM';
+  /** Таблицы с поддержкой транзакций и блокировкой строк. */
+  const TYPE_InnoDB = 'InnoDB';
+  /** Данные для этой таблицы хранятся только в памяти. */
+  const TYPE_HEAP = 'HEAP';
 
-  function __construct($table, $prefix = NULL)
+  protected static $prefix;
+  /** @var PDO */
+  protected static $connection;
+
+  protected static $errors_exception = 'SQLException';
+  protected static $errors_arr = array(
+    self::ERROR_NO_CONNECTION           => 'Для запросов не указано соединения',
+    self::ERROR_BAD_CONNECTION          => 'Соединение не является объектом PDO',
+    self::ERROR_SELECT_BY_PAIR_NO_KEY   => 'В запросе нет ключа "%s"',
+    self::ERROR_SELECT_BY_PAIR_NO_VALUE => 'В запросе нет значений "%s"',
+    self::ERROR_FULLTEXT_ONLY_MYISAM    => 'Попытка назначения полнотекстового индекса таблице "%s" с типом "%s"',
+  );
+
+  /**
+   * Задаем префикс по умолчанию для всех запросов
+   * @static
+   *
+   * @param $prefix
+   */
+  public static function SetPrefix($prefix)
   {
-    $this->prefix = is_null($prefix) ? self::$default_prefix : $prefix;
-    $this->action('select')->table($table);
+    self::$prefix = $prefix;
   }
 
-  function __toString()
+  /**
+   * @static
+   *
+   * @param SQLQuery|string $sql
+   *
+   * @return PDOStatement|bool
+   */
+  public static function Execute($sql, $values = null)
   {
-    return $this->toString();
-  }
-
-  function toString()
-  {
-    $nb = $this->no_bind;
-    $this->setNoBind(true);
-    $sql = $this->make();
-    $this->setNoBind($nb);
-    return $sql;
-  }
-
-  /** ACTIONS **/
-  public function make()
-  {
-    $sql = $this->action.' ';
-    $obj = !$this->no_bind && self::$pdo_bind ? $this : NULL;
-    switch ($this->action) {
-      case 'SELECT':
-        $sql .= ($this->columns ? self::ColumnsToSQL($this->columns) : '*')
-          .' FROM '.self::ColumnsToSQL($this->table, $this->prefix);
-        if (is_array($this->join_arr)) {
-          foreach ($this->join_arr as $arr)
-            $sql .= self::BuildJoin($arr['table'], $arr['on'], $arr['type']);
-        }
-        $sql .= self::BuildWhere($this->where, $obj)
-          .self::BuildGroupBy($this->groupby)
-          .self::BuildOrderBy($this->orderby)
-          .self::BuildLimit($this->limit, $this->offset);
-        break;
-      case 'UPDATE':
-        $sql .= self::ColumnsToSQL($this->table, $this->prefix)
-          .' SET '.self::ValuesToSQL($this->values, $obj)
-          .self::BuildWhere($this->where, $obj)
-          .self::BuildLimit($this->limit, $this->offset);
-        break;
-      case 'DELETE':
-        $sql .= 'FROM '.self::ColumnsToSQL($this->table, $this->prefix)
-          .self::BuildWhere($this->where, $obj)
-          .self::BuildLimit($this->limit, $this->offset);
-        break;
-      case 'INSERT':
-        if (!$this->no_bind && self::$pdo_bind) {
-          $vals = join(', ', array_keys($this->binded_values));
-        } else {
-          $tmp = array();
-          foreach ($this->values as $v) $tmp[] = self::QuoteValue($v);
-          $vals = join(', ', $tmp);
-        }
-
-        $sql .= 'INTO '.self::ColumnsToSQL($this->table, $this->prefix)
-          .' ('.self::ColumnsToSQL(array_keys($this->values)).')'
-          .' VALUES ('.$vals.')';
-        break;
+    if (!self::$connection) {
+      self::ThrowError(self::ERROR_NO_CONNECTION);
     }
-    return $sql;
-  }
-
-  public function select()
-  {
-    return $this->make();
-  }
-
-  public function update($values)
-  {
-    return $this->values($values)->action('update')->make();
-  }
-
-  public function delete()
-  {
-    return $this->action('delete')->action('delete')->make();
-  }
-
-  public function insert($values)
-  {
-    return $this->action('insert')->values($values)->make();
-  }
-
-  public function bindValue($key, $val)
-  {
-    $this->binded_values[':'.$key] = $val;
-    return $this;
-  }
-
-  public function getBindedValue($key)
-  {
-    return isset ($this->binded_values[$key]) ? $this->binded_values[$key] : NULL;
-  }
-
-  public function getBindedValues()
-  {
-    return !$this->no_bind && count($this->binded_values) ? $this->binded_values : NULL;
-  }
-
-  public function getAction()
-  {
-    return $this->action;
-  }
-
-  /** SETTERS **/
-  public function columns($mixed)
-  {
-    if (!is_null($mixed)) {
-      $this->columns = func_get_args();
+    if (!(self::$connection instanceof PDO)) {
+      self::ThrowError(self::ERROR_BAD_CONNECTION);
     }
-    return $this;
+    $stmt = self::$connection->prepare($sql);
+    return $stmt->execute($values) ? $stmt : false;
   }
 
-  public function limit($limit, $offset = NULL)
+  /**
+   * Подключение по умолчанию для всех запросов
+   * @static
+   *
+   * @param PDO $connection
+   */
+  public static function SetConnection(PDO $connection)
   {
-    $this->limit = $limit;
-    if (!is_null($offset)) {
-      $this->offset = $offset;
-    }
-    return $this;
+    self::$connection = $connection;
   }
 
-  public function page($page, $onpage)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQuerySelect
+   */
+  public static function Select($table)
   {
-    $this->limit  = $onpage;
-    $this->offset = ($page - 1) * $onpage;
-    return $this;
+    return self::Configure(new SQLQuerySelect($table));
   }
 
-  public function table($table)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryUpdate
+   */
+  public static function Update($table)
   {
-    $this->table = $table;
-    return $this;
+    return self::Configure(new SQLQueryUpdate($table));
   }
 
-  public function where($mixed)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryDelete
+   */
+  public static function Delete($table)
   {
-    if (is_array($mixed)) {
-      $this->where = $mixed;
-    } elseif (!is_null($mixed)) {
-      $this->where = func_get_args();
-    }
-    $this->make(); // Bind Values
-    return $this;
+    return self::Configure(new SQLQueryDelete($table));
   }
 
-  public function join($table, $on, $type = NULL)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryCreate
+   */
+  public static function Create($table)
   {
-    $this->join_arr[] = array('table'=> $table, 'on'=> $on, 'type'=> $type);
-    return $this;
+    return self::Configure(new SQLQueryCreate($table));
   }
 
-  public function values($arr)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryTruncate
+   */
+  public static function Truncate($table)
   {
-    if (is_array($arr)) {
-      $this->values = $arr;
-      foreach ($arr as $key=> $val)
-        $this->bindValue($key, $val);
-    }
-    return $this;
+    return self::Configure(new SQLQueryTruncate($table));
   }
 
-  public function setNoBind($on = true)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryInsert
+   */
+  public static function Insert($table)
   {
-    $this->no_bind = $on;
-    return $this;
+    return self::Configure(new SQLQueryInsert($table));
   }
 
-  public function orderby($mixed)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryDrop
+   */
+  public static function Drop($table)
   {
-    if (!is_null($mixed)) {
-      $this->orderby = func_get_args();
-    }
-    return $this;
+    return self::Configure(new SQLQueryDrop($table));
   }
 
-  public function groupby($mixed)
+  /**
+   * @static
+   *
+   * @param $table
+   *
+   * @return SQLQueryAlter
+   */
+  public static function Alter($table)
   {
-    if (!is_null($mixed)) {
-      $this->groupby = func_get_args();
-    }
-    return $this;
+    return self::Configure(new SQLQueryAlter($table));
   }
 
-  /** PROTECTED **/
-  protected function action($action)
+  /** Установка подключения и префикса по умолчанию в запрос */
+  protected function Configure(SQLQuery $query)
   {
-    $this->action = strtoupper($action);
-    return $this;
+    $query->setPrefix(self::$prefix);
+    return $query;
   }
 
-  /** STATIC **/
-  public static function Prefix($prefix = NULL)
-  {
-    if (is_null($prefix)) {
-      return self::$default_prefix;
-    }
-    else self::$default_prefix = $prefix;
-  }
-
-  static public function BuildWhere($mixed, $obj = NULL)
-  {
-    $arr = array();
-    if (is_array($mixed)) {
-      foreach ($mixed as $key=> $val) {
-        if (is_numeric($key) && is_numeric($val)) {
-          $val = array('id'=> $val);
-        }
-        elseif ($val === true) $val = array('is_active'=> true);
-
-        if (is_array($val)) {
-          foreach ($val as $k=> $v) {
-            if (is_null($v)) {
-              $arr[] = '`'.$k.'` IS NULL';
-            }
-            else $arr[] = self::QuoteKeyValue($k, $v, $obj, 'w_', true);
-          }
-
-        } else {
-          if (is_null($val)) {
-            $arr[] = '`'.$key.'` IS NULL';
-          }
-          else $arr[] = self::QuoteKeyValue($key, $val, $obj, 'w_', true);
-        }
-
-      }
-      $mixed = join(' AND ', $arr);
-    }
-    return !empty ($mixed) ? ' WHERE '.$mixed : '';
-  }
-
-  static public function BuildLimit($limit, $offset = NULL)
-  {
-    return !empty ($limit) ? ' LIMIT '.($offset ? $offset.', ' : '').$limit : '';
-  }
-
-  static public function BuildOrderBy($orderby)
-  {
-    return !empty ($orderby) ? ' ORDER BY '.self::ColumnsToSQL($orderby) : '';
-  }
-
-  static public function BuildGroupBy($groupby)
-  {
-    return !empty ($groupby) ? ' GROUP BY '.self::ColumnsToSQL($groupby) : '';
-  }
-
-  static public function BuildJoin($table, $on, $type = NULL)
-  {
-    $onstr = '';
-    if (is_array($on)) {
-      $tmp = array();
-      foreach ($on as $key=> $val) {
-        if (is_numeric($key)) {
-          $tmp[] = self::QuoteColumn($val);
-        }
-        else $tmp[] = self::QuoteColumn($key).'='.self::QuoteColumn($val);
-      }
-      $on = join(' AND ', $tmp);
-    }
-    return (!is_null($type) ? ' '.strtoupper($type) : '').' JOIN '.self::ColumnsToSQL($table).' ON '.$on;
-  }
-
-  static public function QuoteValue($val)
-  {
-    if (is_null($val)) return 'NULL';
-    if (!ini_get('magic_quotes_gpc')) {
-      $val = addslashes($val);
-    }
-    return is_numeric($val) ? $val : '"'.$val.'"';
-  }
-
-  static private function HasSpecChar($str)
-  {
-    return preg_match('/[><,\.()`\s\*=]+/is', $str);
-  }
-
-  static private function QuoteColumn($str)
-  {
-    return self::HasSpecChar($str) ? $str : '`'.$str.'`';
-  }
-
-  static private function QuoteKeyValue($key, $val, $obj = NULL, $prefix = NULL, $forcevalue = NULL)
-  {
-    if (!$forcevalue && self::HasSpecChar($val)) {
-      return $val;
-    }
-    elseif (is_numeric($key)) return $val;
-    else {
-      if ($obj instanceof SQL) {
-        $obj->bindValue($prefix.$key, $val);
-        return '`'.$key.'`=:'.$prefix.$key;
-      } else {
-        return '`'.$key.'`='.self::QuoteValue($val);
-      }
-    }
-  }
-
-  static private function ColumnsToSQL($arr, $prefix = NULL)
-  {
-    $out = array();
-    if (!is_array($arr)) $arr = array($arr);
-
-    foreach ($arr as $val) {
-      if (is_array($val)) {
-        foreach ($val as $v)
-          $out[] = self::QuoteColumn($prefix.$v);
-      } else $out[] = self::QuoteColumn($prefix.$val);
-    }
-    return join(', ', $out);
-  }
-
-  static private function ValuesToSQL($arr, $obj = NULL, $prefix = NULL)
-  {
-    $out = array();
-    if (!is_array($arr)) $arr = array($arr);
-
-    foreach ($arr as $key=> $val) {
-      if (is_array($val)) {
-        foreach ($val as $k=> $v)
-          $out[] = self::QuoteKeyValue($k, $v, $obj, $prefix, true);
-      }
-      else {
-        $out[] = self::QuoteKeyValue($key, $val, $obj, $prefix, true);
-      }
-    }
-    return join(', ', $out);
-  }
 }
