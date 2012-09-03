@@ -174,6 +174,20 @@ class Form
     return $this;
   }
 
+  /** Действие для формы */
+  public function setAction($action)
+  {
+    $this->action = $action;
+    return $this;
+  }
+
+  /** Установка текста для кнопки отправки */
+  public function setSubmitButton($submit)
+  {
+    $this->submit_button = $submit;
+    return $this;
+  }
+
   /** @return FormElement|bool */
   public function field($field)
   {

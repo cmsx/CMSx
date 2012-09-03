@@ -13,30 +13,27 @@ class FormTest extends PHPUnit_Framework_TestCase
     $f->addInput('email', 'E-mail');
     $res = $f->render();
 
-//    <!-- Form -->
-//    <form action="" id="form-myform" method="POST">
-//    <!-- Fields -->
-//    <label><span>*</span>Имя <input id="form-myform-name" name="myform[name]" type="text" value="123" /></label>
-//    <label>E-mail <input id="form-myform-email" name="myform[email]" type="text" value="" /></label>
-//    <!-- /Fields -->
-//    <div class="submit"><button type="submit">Отправить</button></div>
-//    </form>
-//    <!-- /Form -->
-
     $str = '<form action="" id="form-myform"';
     $this->assertTrue(strpos($res, $str) !== false, 'ID формы');
 
-    $str = '<div class="submit"><button type="submit">Отправить</button></div>';
+    $str = '<button type="submit">Отправить</button>';
     $this->assertTrue(strpos($res, $str) !== false, 'Кнопка отправки');
 
     $str = '</form>';
+    $this->assertTrue(strpos($res, $str) !== false, 'Закрывающий тэг');
+
+    $str = '<tr><th> <span>*</span> Имя:</th><td><input id="form-myform-name" name="myform[name]"';
     $this->assertTrue(strpos($res, $str) !== false, '');
 
-    $str = '<label> <span>*</span> Имя <input id="form-myform-name" name="myform[name]"';
-    $this->assertTrue(strpos($res, $str) !== false, '');
+    $f->setAction('far/far/away')
+      ->setSubmitButton('Сохранить');
+    $res = $f->render();
 
-    $str = '<label>E-mail <input id="form-myform-email" name="myform[email]"';
-    $this->assertTrue(strpos($res, $str) !== false, '');
+    $str = '<form action="far/far/away" id="form-myform"';
+    $this->assertTrue(strpos($res, $str) !== false, 'Задан action');
+
+    $str = '<button type="submit">Сохранить</button>';
+    $this->assertTrue(strpos($res, $str) !== false, 'Изменена кнопка отправки');
   }
 
   function testVerify()
