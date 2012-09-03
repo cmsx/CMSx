@@ -1,0 +1,1 @@
+Сюда можно разместить содержимое папки library\Zend из Zend Framework v.1.

@@ -5,3 +5,5 @@ tmp/*
 !tmp/.htaccess
 files/*
 !files/index.html
+inc/lib/Zend/*
+!inc/lib/Zend/put_zf_here.txt
