@@ -19,12 +19,22 @@ class Form
     $this->init();
   }
 
+  function __toString()
+  {
+    return $this->render();
+  }
+
   public function getData($field = null)
   {
     if (is_null($field)) {
       return $this->data ? : false;
     }
     return isset($this->data[$field]) ? $this->data[$field] : false;
+  }
+
+  public function getName()
+  {
+    return $this->name;
   }
 
   /** Инициализация для наследников */
@@ -39,7 +49,7 @@ class Form
       $str,
       $this->action,
       !empty($this->name) ? ' id="form-'.$this->name.'"' : '',
-      $this->renderFields(),
+      $this->renderFields(true).$this->renderFields(false),
       $this->renderSubmit()
     );
   }
@@ -74,9 +84,12 @@ class Form
   }
 
   /** Проверка данных, отправленных пользователем */
-  public function verify($data = null)
+  public function validate($data = null)
   {
     if (is_null($data)) {
+      if (!$this->isSent()) {
+        return false;
+      }
       $data = !empty($this->name) ? $_POST[$this->name] : $_POST;
     }
     $this->errors = null;
@@ -95,7 +108,7 @@ class Form
     /** @var $element FormElement */
     foreach ($this->fields as $field=> $element) {
       $val = isset ($data[$field]) ? $data[$field] : null;
-      if ($element->verify($val)) {
+      if ($element->validate($val)) {
         $this->values[$field] = $element->getValue(false);
       } else {
         $this->values[$field] = $val;
@@ -104,10 +117,22 @@ class Form
     }
   }
 
-  /** Есть ли ошибки после верификации */
+  /** Есть ли ошибки */
   public function hasErrors()
   {
     return is_array($this->errors) && count($this->errors) > 0;
+  }
+
+  /** Проверка, отправлена ли форма */
+  public function isSent()
+  {
+    return $this->name ? isset($_POST[$this->name]) : count($_POST)>0;
+  }
+
+  /** Проверка была ли форма отправлена и проверена */
+  public function isValid()
+  {
+    return $this->isSent() && !$this->hasErrors();
   }
 
   /**
@@ -130,6 +155,13 @@ class Form
     }
   }
 
+  /** Значения формы по умолчанию */
+  public function setDefaultValues($values)
+  {
+    $this->values = $values;
+    return $this;
+  }
+
   /** @return FormElement|bool */
   public function field($field)
   {
@@ -142,13 +174,51 @@ class Form
    */
   public function addInput($field, $label = null)
   {
-    return $this->fields[$field] = new FormElementInput($field, $label, $this->name);
+    return $this->fields[$field] = new FormElementInput($field, $label, $this);
   }
 
-  /** Значения формы по умолчанию */
-  public function setDefaultValues($values)
+  /**
+   * Добавить в форму поле ввода SELECT
+   * @return FormElementSelect
+   */
+  public function addSelect($field, $label)
   {
-    $this->values = $values;
-    return $this;
+    return $this->fields[$field] = new FormElementSelect($field, $label, $this);
+  }
+
+  /**
+   * Добавить в форму поле ввода RADIO
+   * @return FormElementRadio
+   */
+  public function addRadio($field, $label)
+  {
+    return $this->fields[$field] = new FormElementRadio($field, $label, $this);
+  }
+
+  /**
+   * Добавить в форму поле ввода CHECKBOX
+   * @return FormElementCheckbox
+   */
+  public function addCheckbox($field, $label)
+  {
+    return $this->fields[$field] = new FormElementCheckbox($field, $label, $this);
+  }
+
+  /**
+   * Добавить в форму поле ввода HIDDEN
+   * @return FormElementHidden
+   */
+  public function addHidden($field, $label)
+  {
+    return $this->fields[$field] = new FormElementHidden($field, $label, $this);
+  }
+
+  /**
+   * Добавить в форму поле Textarea
+   * @return FormElementTextarea
+   */
+  public function addText($field = 'text', $label = 'Текст')
+  {
+    return $this->fields[$field] = new FormElementTextarea($field, $label, $this);
   }
 }

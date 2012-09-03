@@ -3,6 +3,7 @@
 abstract class FormElement
 {
   protected $id;
+  protected $form;
   protected $name;
   protected $info;
   protected $label;
@@ -12,11 +13,13 @@ abstract class FormElement
   protected $filter;
   protected $errors;
   protected $default;
+  protected $options;
   protected $attribute;
   protected $form_name;
   protected $is_hidden;
   protected $placeholder;
   protected $is_required;
+  protected $ignore_keys;
   protected $label_as_placeholder;
 
   /** Шаблон для отрисовки инпута. Порядок параметров: id, name, attribute, value */
@@ -33,25 +36,35 @@ abstract class FormElement
   protected $tmpl_err_regexp = 'Поле "%s" заполнено некорректно';
   /** Шаблон ошибки по фильтру */
   protected $tmpl_err_filter = 'Поле "%s" заполнено некорректно';
+  /** Шаблон ошибки при выборе из списка */
+  protected $tmpl_err_option = 'Поле "%s" не содержит такого варианта';
   /** Шаблон для обязательного поля */
-  protected $tmpl_required = '<span>*</span>';
+  protected $tmpl_required = ' <span>*</span> ';
 
-  function __construct($field, $label = null, $form_name = null)
+  function __construct($field, $label = null, Form $form = null)
   {
-    $this->field     = $field;
-    $this->name      = $field;
-    $this->id        = $field;
-    $this->label     = $label;
-    $this->form_name = $form_name;
+    $this->field = $field;
+    $this->name  = $field;
+    $this->id    = $field;
+    $this->label = $label;
+    if ($form) {
+      $this->form      = $form;
+      $this->form_name = $form->getName();
+    }
     $this->init();
+  }
+
+  function __toString()
+  {
+    return $this->render();
   }
 
   /** Отрисовка блока с полем целиком */
   public function render()
   {
-    return '<label'.($this->hasErrors() ? ' class="error_label"' : '').'>'
-      .$this->renderErrors().$this->renderIsRequired().$this->getLabel()
-      .' '.$this->renderInput().'</label>';
+    return '<label' . ($this->hasErrors() ? ' class="error_label"' : '') . '>'
+      . $this->renderIsRequired() . $this->getLabel()
+      . ' ' . $this->renderInput() . '</label>' . $this->renderErrors();
   }
 
   /** Отрисовка поля формы */
@@ -102,11 +115,19 @@ abstract class FormElement
   }
 
   /** Проверка значения поля */
-  public function verify($data)
+  public function validate($data)
   {
     $this->errors = null;
-    $this->value = $data;
+    $this->value  = $data;
     if (!empty($data)) {
+      if ($this->options) {
+        $bad = $this->ignore_keys
+          ? !in_array($data, $this->options)
+          : !array_key_exists($data, $this->options);
+        if ($bad) {
+          $this->errors[] = sprintf($this->tmpl_err_option, $this->label);
+        }
+      }
       if ($this->regexp && !preg_match($this->regexp, $data)) {
         $this->errors[] = sprintf($this->tmpl_err_regexp, $this->label);
       }
@@ -161,7 +182,7 @@ abstract class FormElement
   public function getName()
   {
     return !empty($this->form_name)
-      ? $this->form_name.'['.$this->name.']'
+      ? $this->form_name . '[' . $this->name . ']'
       : $this->name;
   }
 
@@ -174,7 +195,7 @@ abstract class FormElement
   /** Тег ID для поля */
   public function getId()
   {
-    return 'form-'.(!empty($this->form_name) ? $this->form_name.'-' : '').$this->id;
+    return 'form-' . (!empty($this->form_name) ? $this->form_name . '-' : '') . $this->id;
   }
 
   /** Тег placeholder для поля */
@@ -182,9 +203,9 @@ abstract class FormElement
   {
     return !empty($this->placeholder)
       ? $this->placeholder
-      : ( $this->label_as_placeholder
+      : ($this->label_as_placeholder
         ? $this->label
-        : '' );
+        : '');
   }
 
   /**
@@ -204,6 +225,12 @@ abstract class FormElement
   public function getIsRequired()
   {
     return (bool)$this->is_required;
+  }
+
+  /** Форма к которой принадлежит элемент */
+  public function getForm()
+  {
+    return $this->form;
   }
 
   // SETTERS
@@ -274,14 +301,14 @@ abstract class FormElement
   public function setDefault($default)
   {
     $this->default = $default;
-    $this->verify($default);
+    $this->validate($default);
     return $this;
   }
 
   public function setAttribute($attribute)
   {
     if (is_string($attribute)) {
-      $attribute = array('class'=>$attribute);
+      $attribute = array('class'=> $attribute);
     }
     $this->attribute = (array)$attribute;
     return $this;

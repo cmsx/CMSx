@@ -32,7 +32,7 @@ class FormTest extends PHPUnit_Framework_TestCase
     $str = '</form>';
     $this->assertTrue(strpos($res, $str) !== false, '');
 
-    $str = '<label><span>*</span>Имя <input id="form-myform-name" name="myform[name]"';
+    $str = '<label> <span>*</span> Имя <input id="form-myform-name" name="myform[name]"';
     $this->assertTrue(strpos($res, $str) !== false, '');
 
     $str = '<label>E-mail <input id="form-myform-email" name="myform[email]"';
@@ -48,7 +48,7 @@ class FormTest extends PHPUnit_Framework_TestCase
       ->setRegexp(REGULAR_EMAIL);
 
     $arr = array('name'=>'', 'email'=>'hello world');
-    $f->verify($arr);
+    $f->validate($arr);
 
     $this->assertTrue($f->hasErrors(), 'В форме должны быть ошибки');
 
@@ -64,7 +64,7 @@ class FormTest extends PHPUnit_Framework_TestCase
 
     $clean = $arr = array('name' => 'Vasya', 'email' => 'vasya@pupkin.ru');
     $arr['not'] = 'in form';
-    $f->verify($arr);
+    $f->validate($arr);
     $this->assertFalse($f->hasErrors(), 'Ошибок нет');
     $this->assertEquals($clean, $f->getData(), 'Данные доступны и только ожидаемые');
     $this->assertEquals('Vasya', $f->getData('name'), 'Данные доступны по полям');
