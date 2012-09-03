@@ -10,8 +10,11 @@ class Form
   protected $values;
   protected $submit_button = 'Отправить';
 
-  protected $tmpl_submit = '<div class="submit">%s</div>';
+  protected $tmpl_table = '<table>';
+  protected $tmpl_submit = '<tr class="submit"><td colspan=2>%s</td></div>';
   protected $tmpl_submit_button = '<button type="submit">%s</button>';
+  protected $tmpl_layout = "<!-- Form -->\n<form action=\"%s\"%s method=\"POST\">\n%s
+  <!-- Fields -->\n%s\n%s\n%s<!-- /Fields -->\n%s</table></form>\n<!-- /Form -->\n";
 
   function __construct($name = null)
   {
@@ -38,18 +41,21 @@ class Form
   }
 
   /** Инициализация для наследников */
-  protected function init() {}
+  protected function init()
+  {
+  }
 
   /** Отрисовка формы целиком */
   public function render()
   {
-    $str = "<!-- Form -->\n<form action=\"%s\"%s method=\"POST\">\n"
-          ."<!-- Fields -->\n%s<!-- /Fields -->\n%s</form>\n<!-- /Form -->\n";
     return sprintf(
-      $str,
+      $this->tmpl_layout,
       $this->action,
-      !empty($this->name) ? ' id="form-'.$this->name.'"' : '',
-      $this->renderFields(true).$this->renderFields(false),
+      !empty($this->name) ? ' id="form-' . $this->name . '"' : '',
+      $this->renderErrors(),
+      $this->renderFields(true),
+      $this->tmpl_table,
+      $this->renderFields(false),
       $this->renderSubmit()
     );
   }
@@ -64,16 +70,21 @@ class Form
     /** @var $element FormElement */
     foreach ($this->fields as $element) {
       if (is_null($is_hidden) || $element->getIsHidden() == $is_hidden) {
-        $out .= $element->render()."\n";
+        $out .= $element->render() . "\n";
       }
     }
     return $out;
   }
 
+  public function renderErrors()
+  {
+    return nl2br($this->getErrors(true));
+  }
+
   /** Отрисовка блока отправки формы */
   public function renderSubmit($submit = null)
   {
-    return sprintf($this->tmpl_submit, $this->renderSubmitButton($submit))."\n";
+    return sprintf($this->tmpl_submit, $this->renderSubmitButton($submit)) . "\n";
   }
 
   /** Отрисовка кнопки отправки формы */
@@ -94,7 +105,7 @@ class Form
     }
     $this->errors = null;
     $this->verifyFields($data);
-    if ( !$this->hasErrors() ) {
+    if (!$this->hasErrors()) {
       $this->data = $this->values;
       return true;
     } else {
@@ -126,7 +137,7 @@ class Form
   /** Проверка, отправлена ли форма */
   public function isSent()
   {
-    return $this->name ? isset($_POST[$this->name]) : count($_POST)>0;
+    return $this->name ? isset($_POST[$this->name]) : count($_POST) > 0;
   }
 
   /** Проверка была ли форма отправлена и проверена */
@@ -137,6 +148,7 @@ class Form
 
   /**
    * @param $plain - вернуть в виде массива field=>array() или текстом
+   *
    * @return array|bool
    */
   public function getErrors($plain = false)
@@ -147,7 +159,7 @@ class Form
     if ($plain) {
       $out = '';
       foreach ($this->errors as $arr) {
-        $out .= join("\n", $arr)."\n";
+        $out .= join("\n", $arr) . "\n";
       }
       return $out;
     } else {
@@ -170,6 +182,7 @@ class Form
 
   /**
    * Добавить в форму поле ввода INPUT
+   *
    * @return FormElementInput
    */
   public function addInput($field, $label = null)
@@ -179,6 +192,7 @@ class Form
 
   /**
    * Добавить в форму поле ввода SELECT
+   *
    * @return FormElementSelect
    */
   public function addSelect($field, $label)
@@ -188,6 +202,7 @@ class Form
 
   /**
    * Добавить в форму поле ввода RADIO
+   *
    * @return FormElementRadio
    */
   public function addRadio($field, $label)
@@ -197,6 +212,7 @@ class Form
 
   /**
    * Добавить в форму поле ввода CHECKBOX
+   *
    * @return FormElementCheckbox
    */
   public function addCheckbox($field, $label)
@@ -206,6 +222,7 @@ class Form
 
   /**
    * Добавить в форму поле ввода HIDDEN
+   *
    * @return FormElementHidden
    */
   public function addHidden($field, $label)
@@ -215,6 +232,7 @@ class Form
 
   /**
    * Добавить в форму поле Textarea
+   *
    * @return FormElementTextarea
    */
   public function addText($field = 'text', $label = 'Текст')

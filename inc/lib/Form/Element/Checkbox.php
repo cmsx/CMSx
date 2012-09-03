@@ -2,6 +2,7 @@
 
 class FormElementCheckbox extends FormElement
 {
+  protected $tmpl_field = '<tr><td colspan="2"><label>%3$s %2$s</label> %4$s</td></tr>';
   protected $tmpl_input = '<input id="%s" name="%s" type="checkbox"%s value="%s" />';
   protected $checkbox_value = 1;
 

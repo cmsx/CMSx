@@ -22,6 +22,8 @@ abstract class FormElement
   protected $ignore_keys;
   protected $label_as_placeholder;
 
+  /** Шаблон для отрисовки поля. is_required, label, input, info, errors */
+  protected $tmpl_field = '<tr><th>%s%s:</th><td>%s %s</td></tr>';
   /** Шаблон для отрисовки инпута. Порядок параметров: id, name, attribute, value */
   protected $tmpl_input = '<input id="%s" name="%s" type="text"%s value="%s" />';
   /** Шаблон для доп.информации по полю */
@@ -62,9 +64,13 @@ abstract class FormElement
   /** Отрисовка блока с полем целиком */
   public function render()
   {
-    return '<label' . ($this->hasErrors() ? ' class="error_label"' : '') . '>'
-      . $this->renderIsRequired() . $this->getLabel()
-      . ' ' . $this->renderInput() . '</label>' . $this->renderErrors();
+    return sprintf($this->tmpl_field,
+      $this->renderIsRequired(),
+      $this->getLabel(),
+      $this->renderInput(),
+      $this->renderInfo(),
+      $this->renderErrors()
+    );
   }
 
   /** Отрисовка поля формы */
