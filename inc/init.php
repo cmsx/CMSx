@@ -25,8 +25,11 @@ define ('DIR_FILES_PATH', '/files');
 /** Папка с изображениями */
 define ('DIR_FILES', realpath(__DIR__.'/..'.DIR_FILES_PATH));
 
+/** Регистрируем папку LIB для поддержки Zend */
+set_include_path(get_include_path().PATH_SEPARATOR.DIR_LIB);
+
 // Автозагрузчик
-require_once DIR_LIB.'/autoloader.php';
+require_once DIR_LIB.'/Autoloader.php';
 Autoloader::Register(DIR_LIB, DIR_CTRL, DIR_APP);
 
 // Константы
@@ -46,3 +49,5 @@ if (DEVMODE) {
 } else {
   ini_set('display_errors', 0);
 }
+
+Template::SetTemplatesDir(DIR_TMPL);
