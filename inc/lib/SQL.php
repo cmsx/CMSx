@@ -12,6 +12,8 @@ class SQL extends StandartErrors
   const ERROR_SELECT_BY_PAIR_NO_VALUE = 21;
   /** Ошибка при попытке создания полнотекстового индекса на таблице не MyISAM */
   const ERROR_FULLTEXT_ONLY_MYISAM = 31;
+  /** Ошибка при выполнении запросе */
+  const ERROR_QUERY = 40;
 
   /** Тип таблиц MyISAM принят по умолчанию в MySQL */
   const TYPE_MyISAM = 'MyISAM';
@@ -31,6 +33,7 @@ class SQL extends StandartErrors
     self::ERROR_SELECT_BY_PAIR_NO_KEY   => 'В запросе нет ключа "%s"',
     self::ERROR_SELECT_BY_PAIR_NO_VALUE => 'В запросе нет значений "%s"',
     self::ERROR_FULLTEXT_ONLY_MYISAM    => 'Попытка назначения полнотекстового индекса таблице "%s" с типом "%s"',
+    self::ERROR_QUERY                   => 'Ошибка выполнения "%s": %s',
   );
 
   /**
@@ -59,8 +62,29 @@ class SQL extends StandartErrors
     if (!(self::$connection instanceof PDO)) {
       self::ThrowError(self::ERROR_BAD_CONNECTION);
     }
-    $stmt = self::$connection->prepare($sql);
-    return $stmt->execute($values ? $values : null) ? $stmt : false;
+
+    if ($sql instanceof SQLQuery) {
+      $q = $sql->make();
+      if (is_null($values)) {
+        $values = $sql->getBindedValues();
+      }
+    } else {
+      $q = $sql;
+    }
+
+    $stmt = self::$connection->prepare($q);
+    $res = $stmt->execute($values ? $values : null) ? $stmt : false;
+
+    if (!$res) {
+      $stmt_err = $stmt->errorInfo();
+      self::ThrowError(
+        self::ERROR_QUERY,
+        $sql instanceof SQLQuery ? $sql->make(true) : $sql,
+        '['.$stmt_err[1].'] '.$stmt_err[2]
+      );
+    }
+
+    return $res;
   }
 
   /** Последний добавленный ID */

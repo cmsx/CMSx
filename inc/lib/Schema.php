@@ -18,7 +18,7 @@ abstract class Schema
   }
 
   /** Создание таблицы */
-  public function createTable()
+  public function createTable($drop = false)
   {
     if (is_null($this->table)) {
       throw new Exception(get_called_class() . ': Имя таблицы не определено', 501);
@@ -26,6 +26,11 @@ abstract class Schema
     if (is_null($this->query)) {
       throw new Exception(get_called_class() . ': SQL для создания таблицы не определен', 501);
     }
+
+    if ($drop) {
+      SQL::Drop($this->table);
+    }
+
     return $this->query->execute();
   }
 

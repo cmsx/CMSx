@@ -49,6 +49,7 @@ abstract class SQLQuery
   /**
    * Выполнение запроса
    * @return PDOStatement
+   * @throws SQLException
    */
   public function execute($values = null)
   {
@@ -56,7 +57,7 @@ abstract class SQLQuery
       $this->bindArray($values);
     }
     $this->make();
-    $this->statement = SQL::Execute($this->sql, $this->getBindedValues());
+    $this->statement = SQL::Execute($this);
     return $this->statement;
   }
 
