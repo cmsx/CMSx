@@ -110,6 +110,6 @@ class Front
   /** Объект страницы с ошибкой */
   protected function getPageError()
   {
-    return new PageError('error.php');
+    return new PageError('default/error.php');
   }
 }
