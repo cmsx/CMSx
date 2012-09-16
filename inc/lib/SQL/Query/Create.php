@@ -201,6 +201,12 @@ class SQLQueryCreate extends SQLQuery
     return $this->add($col, 'TINYINT UNSIGNED DEFAULT 0');
   }
 
+  /** BIGINT UNSIGNED DEFAULT 0 */
+  public function addBigInt($col)
+  {
+    return $this->add($col, 'BIGINT UNSIGNED DEFAULT 0');
+  }
+
   /** ENUM ("value", 12) ($null ? : NOT NULL) */
   public function addEnum($col, $values, $null = null)
   {
