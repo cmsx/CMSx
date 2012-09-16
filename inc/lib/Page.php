@@ -24,7 +24,7 @@ class Page extends Template
 
   public function header()
   {
-    return $this->get('header');
+    return $this->get('header') ?: $this->get('title');
   }
 
   public function text()

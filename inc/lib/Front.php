@@ -16,13 +16,13 @@ class Front
 {
   static public function HandleError(Exception $e)
   {
-    // TODO Возвращать правильный HTTP код ответа
+    $p = new PageError('error.php');
+    $p->setErrorCode($e->getCode());
     if (DEVMODE) {
-      echo '<h1>' . $e->getCode() . ' - ' . $e->getMessage() . '</h1>' . nl2br($e->getTraceAsString());
-    } else {
-      echo '<h1>Ошибка ' . $e->getCode() . '</h1>';
+      $p->set('message', $e->getMessage());
+      $p->set('stack', $e->getTraceAsString());
     }
-
+    echo $p->render();
   }
 
   static public function Route(URL $url = null)

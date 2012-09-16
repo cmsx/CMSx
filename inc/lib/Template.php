@@ -31,7 +31,9 @@ class Template extends Standart
     }
     if ($template) {
       ob_start();
-      extract($this->vars,EXTR_OVERWRITE);
+      if ($this->vars) {
+        extract($this->vars,EXTR_OVERWRITE);
+      }
       include self::$dir.DIRECTORY_SEPARATOR.$template;
       return ob_get_clean();
     } else {
