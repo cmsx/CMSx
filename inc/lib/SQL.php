@@ -60,7 +60,7 @@ class SQL extends StandartErrors
       self::ThrowError(self::ERROR_BAD_CONNECTION);
     }
     $stmt = self::$connection->prepare($sql);
-    return $stmt->execute($values) ? $stmt : false;
+    return $stmt->execute($values ? $values : null) ? $stmt : false;
   }
 
   /** Последний добавленный ID */
