@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../../init.php';
+require_once '../init.php';
 
 class ImageTest extends PHPUnit_Framework_TestCase
 {
