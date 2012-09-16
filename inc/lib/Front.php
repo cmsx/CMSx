@@ -14,10 +14,92 @@
  */
 class Front
 {
-  static public function HandleError(Exception $e)
+  protected $url;
+  protected $param;
+  protected $action;
+  protected $method;
+  protected $object;
+  protected $controller;
+  protected $validator_method;
+
+  /** Роутинг на контроллер и обработка результата */
+  public function route(URL $url = null)
   {
-    $p = new PageError('error.php');
-    $p->setErrorCode($e->getCode());
+    $this->processUrl($url);
+
+    try {
+      if (!is_callable(array($this->object, $this->method))) {
+        throw new Exception(
+          sprintf('Метод "%s" в контроллере "%s" не найден', $this->method, $this->controller ? : 'default'), 404
+        );
+      }
+
+      $this->processValidation($url);
+
+      $res = $this->object->{$this->method}($this->param);
+      if ($res instanceof Page) {
+        echo $res->render();
+      } elseif (!empty($res)) {
+        echo $res;
+      }
+    } catch (Exception $e) {
+      $this->handleError($e);
+    }
+  }
+
+  /** Разбор URL и определение нужных объектов и методов */
+  protected function processUrl($url)
+  {
+    if (is_null($url)) {
+      $this->url = new URL();
+      $this->url->parseURL();
+    } else {
+      $this->url = $url;
+    }
+
+    $act_num = 1;
+    try {
+      $one = $this->url->getArgument(1);
+      if (empty($one)) {
+        throw new Exception();
+      }
+      $this->controller = $one . 'Controller';
+      $this->object     = new $this->controller;
+      $act_num    = 2;
+    } catch (Exception $e) {
+      $this->controller = 'defaultController';
+      $this->object     = new $this->controller;
+    }
+    $this->action           = $this->url->getArgument($act_num) ? : 'index';
+    $this->method           = $this->action . 'Action';
+    $this->validator_method = $this->action . 'Validator';
+  }
+
+  /** Получаем параметры и производим валидацию если необходимо */
+  protected function processValidation()
+  {
+    $this->param = $this->url->getParameters();
+
+    /** @var $validator URLValidator */
+    $validator = null;
+    if (method_exists($this->object, $this->validator_method)) {
+      $validator = $this->object->{$this->validator_method}();
+    } elseif (method_exists($this->object, 'defaultValidator')) {
+      $validator = $this->object->defaultValidator();
+    }
+
+    if ($validator instanceof URLValidator) {
+      $this->param = $validator->validate($this->url);
+      if (!$validator->isValid()) {
+        throw new Exception('URL не прошел валидацию', 404);
+      }
+    }
+  }
+
+  /** Обработка ошибок и отображение пользователю */
+  protected function handleError(Exception $e)
+  {
+    $p = $this->getPageError()->setErrorCode($e->getCode());
     if (DEVMODE) {
       $p->set('message', $e->getMessage());
       $p->set('stack', $e->getTraceAsString());
@@ -25,62 +107,9 @@ class Front
     echo $p->render();
   }
 
-  static public function Route(URL $url = null)
+  /** Объект страницы с ошибкой */
+  protected function getPageError()
   {
-    if (is_null($url)) {
-      $url = new URL();
-      $url->parseURL();
-    }
-
-    $act_num = 1;
-    try {
-      $one = $url->getArgument(1);
-      if (empty($one)) {
-        throw new Exception();
-      }
-      $controller = $one . 'Controller';
-      $object     = new $controller;
-      $act_num    = 2;
-    } catch (Exception $e) {
-      $controller = 'defaultController';
-      $object     = new $controller;
-    }
-    $action           = $url->getArgument($act_num) ? : 'index';
-    $method           = $action . 'Action';
-    $validator_method = $action . 'Validator';
-
-    try {
-      if (!is_callable(array($object, $method))) {
-        throw new Exception(
-          sprintf('Метод "%s" в контроллере "%s" не найден', $method, $controller ? : 'default'), 404
-        );
-      }
-
-      $param = $url->getParameters();
-
-      /** @var $validator URLValidator */
-      $validator = null;
-      if (method_exists($object, $validator_method)) {
-        $validator = $object->$validator_method();
-      } elseif (method_exists($object, 'defaultValidator')) {
-        $validator = $object->defaultValidator();
-      }
-
-      if ($validator instanceof URLValidator) {
-        $param = $validator->validate($url);
-        if (!$validator->isValid()) {
-          throw new Exception('URL не прошел валидацию', 404);
-        }
-      }
-
-      $res = $object->$method($param);
-      if ($res instanceof Page) {
-        echo $res->render();
-      } elseif (!empty($res)) {
-        echo $res;
-      }
-    } catch (Exception $e) {
-      self::HandleError($e);
-    }
+    return new PageError('error.php');
   }
 }

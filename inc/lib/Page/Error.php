@@ -2,25 +2,36 @@
 
 class PageError extends Page
 {
+  /** Необходима авторизация */
+  const UNAUTHORIZED = 401;
+  /** Доступ запрещен */
+  const FORBIDDEN    = 403;
+  /** Страница не найдена */
+  const NOT_FOUND    = 404;
+  /** Ошибка сервера */
+  const SERVER_ERROR = 500;
+  /** Сервер недоступен */
+  const UNAVAILABLE  = 503;
+
   protected $http_code;
   protected $valid_codes = array(
-    401 => array(
+    self::UNAUTHORIZED => array(
       'message' => 'Для доступа к этой странице нужно авторизоваться',
       'status'  => 'Unauthorized'
     ),
-    403 => array(
+    self::FORBIDDEN => array(
       'message' => 'Доступ запрещен',
       'status'  => 'Forbidden'
     ),
-    404 => array(
+    self::NOT_FOUND => array(
       'message' => 'Страница не существует',
       'status'  => 'Not Found'
     ),
-    500 => array(
+    self::SERVER_ERROR => array(
       'message' => 'Ошибка сервера',
       'status'  => 'Internal Server Error'
     ),
-    503 => array(
+    self::UNAVAILABLE => array(
       'message' => 'Ведутся технические работы',
       'status'  => 'Service Unavailable'
     )
@@ -31,7 +42,7 @@ class PageError extends Page
   {
     if (array_key_exists($code, $this->valid_codes)) {
       $this->http_code = $code;
-      $this->set('title', $code.' - '.$this->valid_codes[$code]['message']);
+      $this->set('title', $code . ' - ' . $this->valid_codes[$code]['message']);
     } else {
       $this->set('title', 'Неизвестная ошибка');
     }
