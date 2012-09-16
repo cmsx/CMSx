@@ -28,7 +28,7 @@ abstract class Schema
     }
 
     if ($drop) {
-      SQL::Drop($this->table);
+      SQL::Drop($this->table)->execute();
     }
 
     return $this->query->execute();
