@@ -230,7 +230,8 @@ class SQLTest extends PHPUnit_Framework_TestCase
     $sql = SQL::Create('pages')
       ->addId()
       ->addChar('title')
-      ->addParentId()
+      ->addForeignId()
+      ->addEnum('type', array('abc', 'cde'))
       ->addText()
       ->addIndex('title', 'parent_id')
       ->addUniqueIndex('title')
@@ -239,6 +240,7 @@ class SQLTest extends PHPUnit_Framework_TestCase
       . '  `id` INT UNSIGNED AUTO_INCREMENT,'."\n"
       . '  `title` VARCHAR(250) DEFAULT NULL,'."\n"
       . '  `parent_id` INT UNSIGNED DEFAULT NULL,'."\n"
+      . '  `type` ENUM ("abc", "cde") NOT NULL,'."\n"
       . '  `text` TEXT,'."\n"
       . '  INDEX `i_title_parent_id` (`title`, `parent_id`),'."\n"
       . '  UNIQUE INDEX `u_title` (`title`),'."\n"

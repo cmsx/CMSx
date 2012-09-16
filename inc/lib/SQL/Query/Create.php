@@ -142,7 +142,7 @@ class SQLQueryCreate extends SQLQuery
   }
 
   /** parent_id - INT UNSIGNED DEFAULT NULL */
-  public function addParentId($col = null)
+  public function addForeignId($col = null)
   {
     return $this->add(($col ? $col : 'parent_id'), 'INT UNSIGNED DEFAULT NULL');
   }
@@ -199,5 +199,12 @@ class SQLQueryCreate extends SQLQuery
   public function addTinyInt($col)
   {
     return $this->add($col, 'TINYINT UNSIGNED DEFAULT 0');
+  }
+
+  /** ENUM ("value", 12) ($null ? : NOT NULL) */
+  public function addEnum($col, $values, $null = null)
+  {
+    $q = 'ENUM ('.SQLBuilder::BuildValues($values).')' . ( $null ? : ' NOT NULL');
+    return $this->add($col, $q);
   }
 }
