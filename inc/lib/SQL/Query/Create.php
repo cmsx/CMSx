@@ -172,15 +172,15 @@ class SQLQueryCreate extends SQLQuery
   }
 
   /** TIMESTAMP DEFAULT CURRENT_TIMESTAMP */
-  public function addTimeCreated($col)
+  public function addTimeCreated($col = null)
   {
-    return $this->add($col, 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+    return $this->add($col ? $col : 'created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
   }
 
   /** TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP */
-  public function addTimeUpdated($col)
+  public function addTimeUpdated($col = null)
   {
-    return $this->add($col, 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
+    return $this->add($col ? $col : 'updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
   }
 
   /** VARCHAR( $length ? $length : 250 ) DEFAULT NULL */
