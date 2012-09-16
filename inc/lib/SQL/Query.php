@@ -118,6 +118,13 @@ abstract class SQLQuery
     return $this;
   }
 
+  /** Передача в объект соединения PDO */
+  public function setConnection(PDO $conn)
+  {
+    $this->connection = $conn;
+    return $this;
+  }
+
   /** Обработка условия where */
   protected function processWhere()
   {

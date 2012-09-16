@@ -1,5 +1,6 @@
 <?php
 
+define('NO_CONFIG', true);
 require_once __DIR__ . '/../../init.php';
 
 class SQLTest extends PHPUnit_Framework_TestCase

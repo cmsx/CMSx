@@ -179,7 +179,12 @@ class SQL extends StandartErrors
   /** Установка подключения и префикса по умолчанию в запрос */
   protected function Configure(SQLQuery $query)
   {
-    $query->setPrefix(self::$prefix);
+    if (self::$prefix) {
+      $query->setPrefix(self::$prefix);
+    }
+    if (self::$connection) {
+      $query->setConnection(self::$connection);
+    }
     return $query;
   }
 
