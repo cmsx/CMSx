@@ -51,6 +51,9 @@ class SQLQuerySelect extends SQLQuery
   /** Получение следующего элемента из запроса в виде объекта */
   public function fetchObject($class, $constructor_parameters = null)
   {
+    if (!$this->statement) {
+      $this->execute();
+    }
     $this->statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE);
     $res = $this->statement->fetchObject($class, $constructor_parameters);
     return $res ? $res : false;
@@ -82,6 +85,15 @@ class SQLQuerySelect extends SQLQuery
     return $out;
   }
 
+  /** Получение всех элементов по запросу в указанный объект */
+  public function fetchAllInObject($class, $constructor_parameters = null)
+  {
+    $out = array();
+    while ($obj = $this->fetchObject($class, $constructor_parameters)) {
+      $out[] = $obj;
+    }
+    return $out;
+  }
 
   // QUERY SETUP
 
