@@ -1,7 +1,8 @@
 <?php /** @var $this Page */ ?>
 <html>
 <head>
-<title><?= $this->title() ?></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<?= $this->title() ?>
 <?= $this->keywords() ?>
 <?= $this->description() ?>
 <?= $this->css() ?>
@@ -14,6 +15,6 @@
 
 <!-- JS -->
 <?= $this->js() ?>
-<!--  /JS -->
+<!-- /JS -->
 </body>
 </html>

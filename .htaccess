@@ -1,4 +1,4 @@
-AddDefaultCharset utf8
+AddDefaultCharset utf-8
 
 # Routing
 <IfModule mod_rewrite.c>
