@@ -9,6 +9,7 @@ class Template extends Standart
   {
     $this->setTemplate($template);
     $this->vars = $vars;
+    $this->init();
   }
 
   function __toString()
