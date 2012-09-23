@@ -36,8 +36,6 @@ require_once __DIR__.'/const.php';
 // Пользовательский конфиг
 if (!defined('NO_CONFIG')) {
   require_once __DIR__.'/config.php';
-  SQL::SetPrefix(PREFIX);
-  SQL::SetConnection(Connection::Get());
 } else {
   define('DEVMODE', true);
 }
