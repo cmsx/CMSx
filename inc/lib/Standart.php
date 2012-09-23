@@ -17,6 +17,16 @@ abstract class Standart extends StandartErrors implements ArrayAccess
     $this->init();
   }
 
+  function __set($name, $value)
+  {
+    $this->set($name, $value);
+  }
+
+  function __get($name)
+  {
+    return $this->get($name);
+  }
+
   /** Функция для доп.инициализации при наследовании */
   protected function init()
   {
