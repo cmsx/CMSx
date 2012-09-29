@@ -15,6 +15,8 @@ class Form
   protected $tmpl_submit_button = '<button type="submit">%s</button>';
   protected $tmpl_layout = "<!-- Form -->\n<form action=\"%s\"%s method=\"POST\">\n%s
   <!-- Fields -->\n%s\n%s\n%s<!-- /Fields -->\n%s</table></form>\n<!-- /Form -->\n";
+  protected $tmpl_as_text = "%s: %s\n";
+  protected $tmpl_as_html = "<p><b>%s</b>: %s</p>\n";
 
   function __construct($name = null)
   {
@@ -46,11 +48,27 @@ class Form
   }
 
   /** Процессинг формы */
-  protected function process()
+  public function process()
   {
     if ($this->isValid()) {
-      //It seems like something has to be here :)
+      return true; //It seems like something has to be here :)
     }
+    return false;
+  }
+
+  /**
+   * Получение данных из формы в текстовом виде
+   *
+   */
+  public function getDataAsText($is_html = true)
+  {
+    $msg = '';
+    $tmpl = $is_html ? $this->tmpl_as_html : $this->tmpl_as_text;
+    /** @var $field FormElement */
+    foreach ($this->fields as $field) {
+      $msg .= sprintf($tmpl, $field->getLabel(), $field->getValueName());
+    }
+    return $msg;
   }
 
   /** Отрисовка формы целиком */

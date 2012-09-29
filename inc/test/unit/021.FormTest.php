@@ -36,6 +36,31 @@ class FormTest extends PHPUnit_Framework_TestCase
     $this->assertTrue(strpos($res, $str) !== false, 'Изменена кнопка отправки');
   }
 
+  function testOptionsAndText()
+  {
+    $f = new Form('test');
+    $f->addSelect('city', 'Город')
+      ->setOptions(array(
+        'msk' => 'Москва',
+        'spb' => 'Санкт-Петербург'
+      ));
+    $f->addInput('name');
+
+    $this->assertEquals('Москва', $f->field('city')->getValueName('msk'), 'Получаем значение из списка по ключу');
+    $this->assertFalse($f->field('city')->getValueName('Что-то там'), 'Значения нет в списке опций');
+    $this->assertEquals('Что-то там', $f->field('name')->getValueName('Что-то там'), 'Получаем значение без изменений');
+
+    $f->validate(array('city'=>'spb', 'name'=>'John'));
+
+    $this->assertEquals('Санкт-Петербург', $f->field('city')->getValueName(), 'Значение из опций после валидации');
+    $this->assertEquals('John', $f->field('name')->getValueName(), 'Значение из поля прошедшего валидацию');
+
+    $exp_html = "<p><b>Город</b>: Санкт-Петербург</p>\n<p><b>Name</b>: John</p>\n";
+    $exp_text = "Город: Санкт-Петербург\nName: John\n";
+    $this->assertEquals($exp_html, $f->getDataAsText(), 'Данные в виде HTML');
+    $this->assertEquals($exp_text, $f->getDataAsText(false), 'Данные в виде plain text');
+  }
+
   function testVerify()
   {
     $f = new Form('myform');

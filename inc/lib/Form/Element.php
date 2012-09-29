@@ -126,13 +126,8 @@ abstract class FormElement
     $this->errors = null;
     $this->value  = $data;
     if (!empty($data)) {
-      if ($this->options) {
-        $bad = $this->ignore_keys
-          ? !in_array($data, $this->options)
-          : !array_key_exists($data, $this->options);
-        if ($bad) {
-          $this->errors[] = sprintf($this->tmpl_err_option, $this->label);
-        }
+      if ($this->options && !$this->checkValueIsInOptions($data)) {
+        $this->errors[] = sprintf($this->tmpl_err_option, $this->label);
       }
       if ($this->regexp && !preg_match($this->regexp, $data)) {
         $this->errors[] = sprintf($this->tmpl_err_regexp, $this->label);
@@ -221,6 +216,36 @@ abstract class FormElement
   public function getValue($clean = true)
   {
     return $clean ? htmlspecialchars($this->value) : $this->value;
+  }
+
+  /**
+   * Получение название для значения (актуально для SELECTов и CHECKBOXов)
+   * Если значение не передано, используется $this->value
+   * Если у поля нет опций, просто возвращает значение
+   */
+  public function getValueName($value = null)
+  {
+    if (is_null($value)) {
+      $value = $this->value;
+    }
+
+    if ($this->options) {
+      if ($this->checkValueIsInOptions($value)) {
+        return $this->ignore_keys ? $value : $this->options[$value];
+      } else {
+        return false;
+      }
+    }
+
+    return $value;
+  }
+
+  /** Проверка есть ли значение в списке опций */
+  protected function checkValueIsInOptions($value)
+  {
+    return $this->ignore_keys
+      ? in_array($value, $this->options)
+      : array_key_exists($value, $this->options);
   }
 
   public function getIsHidden()
