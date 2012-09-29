@@ -45,6 +45,14 @@ class Form
   {
   }
 
+  /** Процессинг формы */
+  protected function process()
+  {
+    if ($this->isValid()) {
+      //It seems like something has to be here :)
+    }
+  }
+
   /** Отрисовка формы целиком */
   public function render()
   {
