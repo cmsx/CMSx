@@ -4,6 +4,25 @@ require_once __DIR__ . '/../init.php';
 
 class PageTest extends PHPUnit_Framework_TestCase
 {
+  function testDoctype()
+  {
+    $p = new Page();
+    $exp = '<html>'."\n";
+    $this->assertEquals($exp, $p->html(), 'тег HTML для доктайп HTML4');
+
+    $exp = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'."\n";
+    $this->assertEquals($exp, $p->charset(), 'Charset для доктайп HTML4');
+
+    $p->setDoctype(Page::DOCTYPE_XHTML_STRICT);
+    $exp = '<html xmlns="http://www.w3.org/1999/xhtml">'."\n";
+    $this->assertEquals($exp, $p->html(), 'тег HTML для доктайп XHTML');
+
+    $p->setDoctype(Page::DOCTYPE_HTML_5);
+
+    $exp = '<meta charset="utf-8" />'."\n";
+    $this->assertEquals($exp, $p->charset(), 'Charset для доктайп HTML5');
+  }
+
   function testRenderTitle()
   {
     $title  = 'Тайтл страницы';

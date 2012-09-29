@@ -3,8 +3,23 @@
 class Page extends Template
 {
   protected $layout;
+  protected $doctype = self::DOCTYPE_HTML_4_TRANSITIONAL;
+
   protected static $default_layout;
   protected static $default_template;
+  protected static $doctype_arr = array(
+    self::DOCTYPE_HTML_5              => '<!DOCTYPE html>',
+    self::DOCTYPE_HTML_4_STRICT       => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
+    self::DOCTYPE_HTML_4_TRANSITIONAL => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+    self::DOCTYPE_XHTML_STRICT        => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+    self::DOCTYPE_XHTML_TRANSITIONAL  => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
+  );
+
+  const DOCTYPE_HTML_4_STRICT       = 'html4strict';
+  const DOCTYPE_HTML_4_TRANSITIONAL = 'html4transitional';
+  const DOCTYPE_HTML_5              = 'html5';
+  const DOCTYPE_XHTML_STRICT        = 'xhtml_strict';
+  const DOCTYPE_XHTML_TRANSITIONAL  = 'xhtml_transitional';
 
   /** Отрисовка страницы */
   public function render()
@@ -16,6 +31,14 @@ class Page extends Template
   public function setLayout($layout)
   {
     $this->layout = $layout;
+    return $this;
+  }
+
+  /** Установка DOCTYPE из self::DOCTYPE_* */
+  public function setDoctype($doctype)
+  {
+    $this->doctype = $doctype;
+
     return $this;
   }
 
@@ -119,6 +142,28 @@ class Page extends Template
       $out .= '<script type="text/javascript" src="'.$file['file'].'"></script>'."\n";
     }
     return $out;
+  }
+
+  /** Отрисовка DOCTYPE */
+  public function doctype()
+  {
+    return self::$doctype_arr[$this->doctype]."\n";
+  }
+
+  /** Отрисовка тега META charset */
+  public function charset($charset = 'utf-8')
+  {
+    return ( $this->doctype == self::DOCTYPE_HTML_5
+      ? '<meta charset="'.$charset.'" />'
+      : '<meta http-equiv="Content-Type" content="text/html; charset='.$charset.'" />' )."\n";
+  }
+
+  /** Отрисовка тега HTML */
+  public function html()
+  {
+    return ( $this->doctype == self::DOCTYPE_XHTML_STRICT || $this->doctype == self::DOCTYPE_XHTML_TRANSITIONAL
+      ? '<html xmlns="http://www.w3.org/1999/xhtml">'
+      : '<html>' )."\n";
   }
 
   /** Добавление CSS к шаблону страницы */
