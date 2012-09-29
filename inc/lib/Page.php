@@ -19,19 +19,26 @@ class Page extends Template
     return $this;
   }
 
-  /** Заголовок в теге TITLE */
-  public function title()
+  /**
+   * Заголовок в теге TITLE
+   * @param $tag вывести значение в теге или отдельно
+   */
+  public function title($tag = 'title')
   {
     if (!$t = $this->get('title')) {
       return false;
     }
-    return '<title>'.$t.'</title>'."\n";
+    return $tag ? sprintf('<%s>%s</%1$s>'."\n", $tag, $t) : $t;
   }
 
-  /** Заголовок на странице */
-  public function header()
+  /**
+   * Заголовок на странице.
+   * @param $tag вывести значение в теге или отдельно
+   */
+  public function header($tag = 'h1')
   {
-    return $this->get('header') ?: $this->get('title');
+    $header = $this->get('header') ?: $this->get('title');
+    return $tag ? sprintf('<%s>%s</%1$s>'."\n", $tag, $header) : $header;
   }
 
   /** Текст страницы */
