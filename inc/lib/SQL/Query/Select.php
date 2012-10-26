@@ -60,12 +60,16 @@ class SQLQuerySelect extends SQLQuery
   }
 
   /** Получение одного элемента по запросу. Автоматически ставит LIMIT 1 */
-  public function fetchOne()
+  public function fetchOne($column = null)
   {
     $this->limit(1);
     $this->execute();
     $res = $this->statement->fetch(PDO::FETCH_ASSOC);
-    return $res ? current($res) : false;
+    if (!is_null($column)) {
+      return isset($res[$column]) ? $res[$column] : false;
+    }
+    
+    return $res;
   }
 
   /** Получение массива ключ-значение */
