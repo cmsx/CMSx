@@ -71,8 +71,8 @@ class SQLQuerySelect extends SQLQuery
     if (!$this->statement) {
       $this->execute();
     }
-    $this->statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE);
-    $res = $this->statement->fetchObject($class, $constructor_parameters);
+    $this->statement->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $class, $constructor_parameters);
+    $res = $this->statement->fetch();
     return $res ? $res : false;
   }
 
