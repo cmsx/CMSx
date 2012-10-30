@@ -38,14 +38,31 @@ class SQLQuerySelect extends SQLQuery
     return $res ? $res : false;
   }
 
-  /** Получение всех элементов полученных запросом */
-  public function fetchAll()
+  /**
+   * Получение всех элементов полученных запросом
+   * $column - одномерный массив содержащий указанный столбец
+   */
+  public function fetchAll($column = null)
   {
     if (!$this->statement) {
       $this->execute();
     }
     $res = $this->statement->fetchAll(PDO::FETCH_ASSOC);
-    return $res ? $res : false;
+    if (!is_null($column)) {
+      //Проверка наличия столбца
+      $row = current($res);
+      if (!isset($row[$column])) {
+        SQL::ThrowError(SQL::ERROR_SELECT_BY_PAIR_NO_VALUE, $column);
+      }
+
+      $out = array();
+      foreach ($res as $row) {
+        $out[] = $row[$column];
+      }
+      return $out;
+    } else {
+      return $res ? $res : false;
+    }
   }
 
   /** Получение следующего элемента из запроса в виде объекта */
