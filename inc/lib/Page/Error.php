@@ -12,6 +12,10 @@ class PageError extends Page
   const SERVER_ERROR = 500;
   /** Сервер недоступен */
   const UNAVAILABLE  = 503;
+  /** Редирект перманентный */
+  const REDIRECT_PERM = 301;
+  /** Редирект временный */
+  const REDIRECT_TEMP = 302;
 
   protected $http_code;
   protected $valid_codes = array(
@@ -34,8 +38,22 @@ class PageError extends Page
     self::UNAVAILABLE => array(
       'message' => 'Ведутся технические работы',
       'status'  => 'Service Unavailable'
+    ),
+    self::REDIRECT_TEMP => array(
+      'message' => 'Страница временно перемещена',
+      'status'  => 'Moved Temporarily'
+    ),
+    self::REDIRECT_PERM => array(
+      'message' => 'Страница перемещена',
+      'status'  => 'Moved Permanently'
     )
   );
+
+  /** Является ли вызов редиректом */
+  public function isRedirect()
+  {
+    return in_array($this->http_code, array(self::REDIRECT_PERM, self::REDIRECT_TEMP));
+  }
 
   /** Если код ошибки является валидным HTTP кодом он будет выдан в заголовке */
   public function setErrorCode($code)
@@ -49,11 +67,17 @@ class PageError extends Page
     return $this;
   }
 
-  public function render()
+  /** Отправка кода HTTP */
+  public function sendHTTPCode()
   {
     if ($this->http_code) {
       header(sprintf('HTTP/1.0 %d %s', $this->http_code, $this->valid_codes[$this->http_code]['status']));
     }
+  }
+
+  public function render()
+  {
+    $this->sendHTTPCode();
     return parent::render();
   }
 }

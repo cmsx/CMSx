@@ -47,6 +47,12 @@ class Front
     }
   }
 
+  /** Редирект на указанный URL. $permanently - редирект временный или постоянный */
+  public static function Redirect($url, $permanently = true)
+  {
+    throw new Exception($url, $permanently ? PageError::REDIRECT_PERM : PageError::REDIRECT_TEMP);
+  }
+
   /** Разбор URL и определение нужных объектов и методов */
   protected function processUrl($url)
   {
@@ -100,6 +106,13 @@ class Front
   protected function handleError(Exception $e)
   {
     $p = $this->getPageError()->setErrorCode($e->getCode());
+
+    if ($p->isRedirect()) {
+      header('Location: '.$e->getMessage());
+      $p->sendHTTPCode();
+      return;
+    }
+
     if (DEVMODE) {
       $p->set('message', $e->getMessage());
       $p->set('stack', $e->getTraceAsString());
