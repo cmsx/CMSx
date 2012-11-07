@@ -28,6 +28,12 @@ class Controller
     throw new Exception($url, $permanently ? PageError::REDIRECT_PERM : PageError::REDIRECT_TEMP);
   }
 
+  /** Редирект на предыдущую страницу */
+  public function back()
+  {
+    $this->redirect($_SERVER['HTTP_REFERER'] ? : '/', false);
+  }
+
   /** Текущее действие */
   public function getAction()
   {
