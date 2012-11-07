@@ -17,7 +17,7 @@ class Controller
   }
 
   /** Для любого произвольного экшна */
-  function __call()
+  function __call($name, $arguments)
   {
     PageError::NotFound();
   }
