@@ -30,7 +30,8 @@ class Front
     try {
       if (!is_callable(array($this->object, $this->method))) {
         throw new Exception(
-          sprintf('Метод "%s" в контроллере "%s" не найден', $this->method, $this->controller ? : 'default'), 404
+          sprintf('Метод "%s" в контроллере "%s" не найден', $this->method, $this->controller),
+          PageError::NOT_FOUND
         );
       }
 
@@ -47,12 +48,6 @@ class Front
     }
   }
 
-  /** Редирект на указанный URL. $permanently - редирект временный или постоянный */
-  public static function Redirect($url, $permanently = true)
-  {
-    throw new Exception($url, $permanently ? PageError::REDIRECT_PERM : PageError::REDIRECT_TEMP);
-  }
-
   /** Разбор URL и определение нужных объектов и методов */
   protected function processUrl($url)
   {
@@ -63,20 +58,19 @@ class Front
       $this->url = $url;
     }
 
-    $act_num = 1;
     try {
       $one = $this->url->getArgument(1);
       if (empty($one)) {
         throw new Exception();
       }
       $this->controller = $one . 'Controller';
-      $this->object     = new $this->controller;
-      $act_num    = 2;
+      $this->action     = $this->url->getArgument(2) ? : 'index';
+      $this->object     = new $this->controller ($this->url, $one, $this->action);
     } catch (Exception $e) {
       $this->controller = 'defaultController';
-      $this->object     = new $this->controller;
+      $this->action     = $this->url->getArgument(1) ? : 'index';
+      $this->object     = new $this->controller ($this->url, 'default', $this->action);
     }
-    $this->action           = $this->url->getArgument($act_num) ? : 'index';
     $this->method           = $this->action . 'Action';
     $this->validator_method = $this->action . 'Validator';
   }

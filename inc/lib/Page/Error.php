@@ -18,7 +18,7 @@ class PageError extends Page
   const REDIRECT_TEMP = 302;
 
   protected $http_code;
-  protected $valid_codes = array(
+  protected static $valid_codes = array(
     self::UNAUTHORIZED => array(
       'message' => 'Для доступа к этой странице нужно авторизоваться',
       'status'  => 'Unauthorized'
@@ -58,9 +58,9 @@ class PageError extends Page
   /** Если код ошибки является валидным HTTP кодом он будет выдан в заголовке */
   public function setErrorCode($code)
   {
-    if (array_key_exists($code, $this->valid_codes)) {
+    if (array_key_exists($code, static::$valid_codes)) {
       $this->http_code = $code;
-      $this->set('title', $code . ' - ' . $this->valid_codes[$code]['message']);
+      $this->set('title', $code . ' - ' . static::$valid_codes[$code]['message']);
     } else {
       $this->set('title', 'Неизвестная ошибка');
     }
@@ -71,7 +71,7 @@ class PageError extends Page
   public function sendHTTPCode()
   {
     if ($this->http_code) {
-      header(sprintf('HTTP/1.0 %d %s', $this->http_code, $this->valid_codes[$this->http_code]['status']));
+      header(sprintf('HTTP/1.0 %d %s', $this->http_code, static::$valid_codes[$this->http_code]['status']));
     }
   }
 
@@ -79,5 +79,42 @@ class PageError extends Page
   {
     $this->sendHTTPCode();
     return parent::render();
+  }
+
+  /** Выброс исключения - страница не найдена */
+  public static function NotFound()
+  {
+    self::ThrowError(self::NOT_FOUND);
+  }
+
+  /** Выброс исключения - требуется авторизация */
+  public static function Unauthorized()
+  {
+    self::ThrowError(self::UNAUTHORIZED);
+  }
+
+  /** Выброс исключения - доступ запрещен */
+  public static function Forbidden()
+  {
+    self::ThrowError(self::FORBIDDEN);
+  }
+
+  /** Выброс исключения - сервис недоступен */
+  public static function Unavailable()
+  {
+    self::ThrowError(self::UNAVAILABLE);
+  }
+
+  /** Выброс исключения - ошибка сервера */
+  public static function ServerError()
+  {
+    self::ThrowError(self::SERVER_ERROR);
+  }
+
+  public static function GetMessage($code, $args = null, $_ = null)
+  {
+    return isset(self::$valid_codes[$code])
+      ? self::$valid_codes[$code]['message']
+      : false;
   }
 }
