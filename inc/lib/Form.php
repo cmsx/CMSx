@@ -235,7 +235,7 @@ class Form
    *
    * @return FormElementSelect
    */
-  public function addSelect($field, $label)
+  public function addSelect($field, $label = null)
   {
     return $this->fields[$field] = new FormElementSelect($field, $label, $this);
   }
@@ -245,7 +245,7 @@ class Form
    *
    * @return FormElementRadio
    */
-  public function addRadio($field, $label)
+  public function addRadio($field, $label = null)
   {
     return $this->fields[$field] = new FormElementRadio($field, $label, $this);
   }
@@ -255,7 +255,7 @@ class Form
    *
    * @return FormElementCheckbox
    */
-  public function addCheckbox($field, $label)
+  public function addCheckbox($field, $label = null)
   {
     return $this->fields[$field] = new FormElementCheckbox($field, $label, $this);
   }
@@ -265,9 +265,19 @@ class Form
    *
    * @return FormElementHidden
    */
-  public function addHidden($field, $label)
+  public function addHidden($field, $label = null)
   {
     return $this->fields[$field] = new FormElementHidden($field, $label, $this);
+  }
+
+  /**
+   * Добавить в форму поле ввода PASSWORD
+   *
+   * @return FormElementPassword
+   */
+  public function addPassword($field = 'password', $label = 'Пароль')
+  {
+    return $this->fields[$field] = new FormElementPassword($field, $label, $this);
   }
 
   /**
