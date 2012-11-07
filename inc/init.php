@@ -48,6 +48,8 @@ if (DEVMODE) {
   ini_set('display_errors', 0);
 }
 
+/** Директория для шаблонов */
 Template::SetTemplatesDir(DIR_TMPL);
 
+/** Дополнительная инициализация */
 require_once __DIR__ . '/custom.init.php';
