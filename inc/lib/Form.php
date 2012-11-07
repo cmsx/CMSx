@@ -4,6 +4,7 @@ class Form
 {
   protected $name;
   protected $data;
+  /** @var FormElement[] */
   protected $fields;
   protected $action;
   protected $errors;
@@ -197,6 +198,11 @@ class Form
   public function setDefaultValues($values)
   {
     $this->values = $values;
+    foreach ($this->fields as $field=>$f) {
+      if (isset($this->values[$field])) {
+        $f->setDefault($this->values[$field]);
+      }
+    }
     return $this;
   }
 
