@@ -25,9 +25,9 @@ class Front
   /** Роутинг на контроллер и обработка результата */
   public function route(URL $url = null)
   {
-    $this->processUrl($url);
-
     try {
+      $this->processUrl($url);
+
       if (!is_callable(array($this->object, $this->method))) {
         throw new Exception(
           sprintf('Метод "%s" в контроллере "%s" не найден', $this->method, $this->controller),
