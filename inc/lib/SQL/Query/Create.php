@@ -8,6 +8,7 @@ class SQLQueryCreate extends SQLQuery
     'index'        => array(),
     'unique'       => array(),
     'fulltext'     => array(),
+    'foreign_key'  => array(),
     'primary_key'  => null,
   );
 
@@ -36,6 +37,13 @@ class SQLQueryCreate extends SQLQuery
 
     if (!is_null($this->definition['primary_key'])) {
       $parts[] = 'PRIMARY KEY (' . SQLBuilder::BuildNames($this->definition['primary_key']) . ')';
+    }
+
+    foreach ($this->definition['foreign_key'] as $name=> $arr) {
+      $parts[] = 'FOREIGN KEY `'.$name.'` (`' . $arr['column'] . '`)'
+        . ' REFERENCES `' . $this->prefix.$arr['f_table'] . '`(`' . $arr['f_column'] . '`)'
+        . ' ON DELETE '.SQLBuilder::BuildReferenceAction($arr['on_delete'])
+        . ' ON UPDATE '.SQLBuilder::BuildReferenceAction($arr['on_update']);
     }
 
     $this->sql = 'CREATE TABLE ' . SQLBuilder::QuoteTable($this->table, $this->prefix) . " (\n  "
@@ -120,6 +128,38 @@ class SQLQueryCreate extends SQLQuery
   }
 
   /**
+   * @param string       $table
+   * @param array|string $columns - список столбцов
+   * @param int          $on_delete - SQL::FOREIGN_RESTRICT | SQL::FOREIGN_CASCADE | SQL::FOREIGN_SET_NULL
+   * @param int          $on_update - SQL::FOREIGN_RESTRICT | SQL::FOREIGN_CASCADE | SQL::FOREIGN_SET_NULL
+   */
+
+  /**
+   * Создание внешнего ключа. Автоматически меняет тип создаваемой таблицы на InnoDB
+   *
+   * @param string $column    - столбец создаваемой таблицы
+   * @param string $f_table   - внешняя таблица
+   * @param string $f_column  - столбец внешней таблицы
+   * @param int    $on_delete - Действие при удалении. По умолчанию = SQL::FOREIGN_RESTRICT.
+   * Еще варианты: SQL::FOREIGN_CASCADE | SQL::FOREIGN_SET_NULL
+   * @param int    $on_update - Действие при изменении. Если не задано - равно действию при удалении
+   */
+  public function addForeignKey($column, $f_table, $f_column, $on_delete = null, $on_update = null)
+  {
+    $this->definition['foreign_key']['fk_' . $column] = array(
+      'column'    => $column,
+      'f_table'   => $f_table,
+      'f_column'  => $f_column,
+      'on_delete' => $on_delete,
+      'on_update' => $on_update ? : $on_delete,
+    );
+
+    $this->setType(SQL::TYPE_InnoDB);
+
+    return $this;
+  }
+
+  /**
    * @param $type - тип таблицы: MyISAM, InnoDB и т.п.
    */
   public function setType($type)
@@ -127,7 +167,7 @@ class SQLQueryCreate extends SQLQuery
     if (!empty($this->definition['fulltext']) && $type != SQL::TYPE_MyISAM) {
       SQL::ThrowError(SQL::ERROR_FULLTEXT_ONLY_MYISAM, $this->table, $type);
     }
-    $this->type = $type;
+    $this->definition['type'] = $type;
     return $this;
   }
 

@@ -22,6 +22,13 @@ class SQL extends StandartErrors
   /** Данные для этой таблицы хранятся только в памяти. */
   const TYPE_HEAP = 'HEAP';
 
+  /** Запрет удаления внешних значений */
+  const FOREIGN_RESTRICT = 1;
+  /** Удалить записи относящиеся к внешнему ключу */
+  const FOREIGN_CASCADE = 2;
+  /** Обнуление в таблице внешних ключей */
+  const FOREIGN_SET_NULL = 3;
+
   protected static $prefix;
   /** @var PDO */
   protected static $connection;

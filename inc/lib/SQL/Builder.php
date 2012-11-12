@@ -146,6 +146,21 @@ abstract class SQLBuilder
     return join(', ', $out);
   }
 
+  /** Построение условий действия для внешних ключей: ON DELETE [CASCADE|RESTRICT|...] */
+  public static function BuildReferenceAction($action)
+  {
+    switch ($action) {
+      case SQL::FOREIGN_CASCADE:
+        return 'CASCADE';
+        break;
+      case SQL::FOREIGN_SET_NULL:
+        return 'SET NULL';
+        break;
+      default:
+        return 'RESTRICT';
+    }
+  }
+
   public static function QuoteTable($table, $prefix = null)
   {
     if (strpos($table, '`') === false && strpos($table, ',') === false) {
