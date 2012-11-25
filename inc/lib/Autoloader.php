@@ -80,7 +80,9 @@ class Autoloader
    */
   public static function FindParts($class_name)
   {
-    if (false !== strpos($class_name, '_')) {
+    if (false !== strpos($class_name, '\\')) {
+      return explode('\\', trim($class_name, '\\'));
+    } elseif (false !== strpos($class_name, '_')) {
       return explode('_', $class_name);
     } else {
       $pass1 = preg_replace("/([a-z])([A-Z])/", "\\1 \\2", $class_name);

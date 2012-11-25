@@ -35,6 +35,7 @@ class AutoloaderTest extends PHPUnit_Framework_TestCase
       array('APIMaybeDificult', array('API', 'Maybe', 'Dificult')),
       array('APIByHTML', array('API', 'By', 'HTML')),
       array('Zend_StyleNOMATTERExploding_Yeah', array('Zend','StyleNOMATTERExploding','Yeah')),
+      array('\\Some\\Name_SPACE', array('Some', 'Name_SPACE'))
     );
   }
 }
