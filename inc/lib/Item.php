@@ -1,6 +1,6 @@
 <?php
 
-abstract class Item extends Standart
+class Item extends Standart
 {
   protected static $table;
 
