@@ -129,17 +129,20 @@ abstract class SQLQuery
   /** Обработка условия where */
   protected function processWhere()
   {
-    foreach ($this->where as $key => $val) {
-      if (is_numeric($key)) {
-        if ($val === true || $val === false) {
-          unset($this->where[$key]);
-          $this->where['is_active'] = true;
-        } elseif (is_numeric($val)) {
-          unset($this->where[$key]);
-          $this->where['id'] = $val;
+    if ($this->where) {
+      foreach ($this->where as $key => $val) {
+        if (is_numeric($key)) {
+          if ($val === true || $val === false) {
+            unset($this->where[$key]);
+            $this->where['is_active'] = true;
+          } elseif (is_numeric($val)) {
+            unset($this->where[$key]);
+            $this->where['id'] = $val;
+          }
         }
       }
     }
+
     if ($this->where) {
       $this->setValues($this->where, 'where');
     }
