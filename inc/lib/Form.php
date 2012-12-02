@@ -9,11 +9,13 @@ class Form
   protected $action;
   protected $errors;
   protected $values;
-  protected $submit_button = 'Отправить';
+  protected $submit_button = array(
+    'text' => 'Отправить',
+    'attr' => null
+  );
 
   protected $tmpl_table = '<table>';
   protected $tmpl_submit = '<tr class="submit"><td colspan=2>%s</td></div>';
-  protected $tmpl_submit_button = '<button type="submit">%s</button>';
   protected $tmpl_layout = "<!-- Form -->\n<form action=\"%s\"%s method=\"POST\">\n%s
   <!-- Fields -->\n%s\n%s\n%s<!-- /Fields -->\n%s</table></form>\n<!-- /Form -->\n";
   protected $tmpl_as_text = "%s: %s\n";
@@ -109,16 +111,19 @@ class Form
   }
 
   /** Отрисовка блока отправки формы */
-  public function renderSubmit($submit = null)
+  public function renderSubmit($submit = null, $attr = null)
   {
-    return sprintf($this->tmpl_submit, $this->renderSubmitButton($submit)) . "\n";
+    return sprintf($this->tmpl_submit, $this->renderSubmitButton($submit, $attr)) . "\n";
   }
 
   /** Отрисовка кнопки отправки формы */
-  public function renderSubmitButton($submit = null)
+  public function renderSubmitButton($submit = null, $attr = null)
   {
-    $submit = is_null($submit) ? $this->submit_button : $submit;
-    return sprintf($this->tmpl_submit_button, $submit);
+    return HTML::Button(
+      (is_null($submit) ? $this->submit_button['text'] : $submit),
+      true,
+      (is_null($attr) ? $this->submit_button['attr'] : $attr)
+    );
   }
 
   /** Проверка данных, отправленных пользователем */
@@ -214,9 +219,12 @@ class Form
   }
 
   /** Установка текста для кнопки отправки */
-  public function setSubmitButton($submit)
+  public function setSubmitButton($submit, $attr = null)
   {
-    $this->submit_button = $submit;
+    $this->submit_button = array(
+      'text' => $submit,
+      'attr' => $attr
+    );
     return $this;
   }
 
